@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSessionStorage } from "@/hooks/useSessionStorage";
@@ -11,45 +11,99 @@ type User = {
   email: string;
 };
 
+type GoogleCredentialResponse = {
+  credential: string;
+};
+
+// Extend window with Google type safely
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (options: {
+            client_id: string;
+            callback: (response: GoogleCredentialResponse) => void;
+          }) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
+
+const GOOGLE_CLIENT_ID =
+  "70733404385-37hlp9345cueck7bc99nl15cdje278qc.apps.googleusercontent.com";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [user, setUser] = useSessionStorage<User | null>("user", null);
+  const [, setUser] = useSessionStorage<User | null>("user", null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const BACKEND_URL =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  // Load Google script dynamically
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
 
-  const handleLogin = async (e: React.FormEvent) => {
+    // Cleanup returns void
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Dummy frontend login
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials");
-
-      setUser(data.user);
-      router.push("/");
-    } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
-      else setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
+    if (!email || !password) {
+      setError("Please enter email and password");
+      return;
     }
+
+    const dummyUser: User = {
+      id: "1",
+      name: "Test User",
+      email,
+    };
+    setUser(dummyUser);
+    router.push("/");
   };
 
+  // Frontend-only Google login
   const handleGoogleLogin = () => {
-    window.location.href = `${BACKEND_URL}/api/auth/google`;
+    if (!window.google) {
+      setError("Google API not loaded yet");
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response) => {
+        try {
+          const decoded = JSON.parse(
+            atob(response.credential.split(".")[1])
+          ) as { sub: string; name: string; email: string };
+
+          setUser({
+            id: decoded.sub,
+            name: decoded.name,
+            email: decoded.email,
+          });
+          router.push("/");
+        } catch {
+          setError("Failed to parse Google response");
+        }
+      },
+    });
+
+    window.google.accounts.id.prompt();
   };
 
   return (
@@ -103,10 +157,9 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-brand text-white py-2 rounded-lg hover:bg-brand-dark transition disabled:opacity-50"
+            className="w-full bg-brand text-white py-2 rounded-lg hover:bg-brand-dark transition"
           >
-            {loading ? "Logging in..." : "Login"}
+            Login
           </button>
         </form>
 
