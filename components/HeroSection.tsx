@@ -35,7 +35,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Link
-            href="/shop"
+            href="/login"
             className="inline-block bg-white text-brand font-semibold px-8 py-3 rounded-full hover:bg-brand-dark hover:text-white transition-all duration-300 text-lg"
           >
             Shop Now

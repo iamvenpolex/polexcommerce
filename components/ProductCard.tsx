@@ -46,7 +46,7 @@ export default function ProductCard({
           src={product.image}
           alt={product.name}
           fill
-          className="object-contain"
+          className="object-contain width:auto height:auto"
           {...imageProps}
         />
       </div>

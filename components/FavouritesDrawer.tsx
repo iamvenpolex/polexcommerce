@@ -50,7 +50,7 @@ export default function FavoritesDrawer({
 
             {favorites.length === 0 ? (
               <p className="text-gray-500 text-center mt-10">
-                Your cart is empty 😢
+                Your favourites is empty 😢
               </p>
             ) : (
               <div className="flex-1 overflow-y-auto space-y-4">

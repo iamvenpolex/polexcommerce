@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useSessionStorage } from "@/hooks/useSessionStorage";
+import Image from "next/image";
 
 type User = {
   id: string;
@@ -11,10 +11,12 @@ type User = {
   email: string;
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useSessionStorage<User | null>("user", null);
   const [error, setError] = useState("");
@@ -23,20 +25,38 @@ export default function LoginPage() {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const validatePassword = (pwd: string) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; // min 8 chars, 1 uppercase, 1 number
+    return regex.test(pwd);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Password must be at least 8 characters, include 1 uppercase letter and 1 number"
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid credentials");
+      if (!res.ok) throw new Error(data.message || "Registration failed");
 
       setUser(data.user);
       router.push("/");
@@ -56,7 +76,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-semibold text-center mb-6 text-brand">
-          Welcome Back
+          Create Account
         </h1>
 
         {error && (
@@ -65,7 +85,20 @@ export default function LoginPage() {
           </p>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-800">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand text-black"
+              required
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-800">
               Email
@@ -74,7 +107,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand"
+              className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand text-black"
               required
             />
           </div>
@@ -88,7 +121,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand"
+                className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand text-black"
                 required
               />
               <button
@@ -101,35 +134,49 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-800">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full border rounded-md p-2 focus:ring-2 focus:ring-brand text-black"
+              required
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-brand text-white py-2 rounded-lg hover:bg-brand-dark transition disabled:opacity-50"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Creating account..." : "Register"}
           </button>
         </form>
 
-        <div className="my-4 text-center text-gray-500">or</div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full border border-gray-300 py-2 rounded-lg flex items-center justify-center gap-2 text-gray-800 hover:bg-gray-100 transition"
-        >
-          <Image
-            src="/google-icon.svg"
-            alt="Google"
-            width={20}
-            height={20}
-            priority
-          />
-          <span>Continue with Google</span>
-        </button>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600 mb-2">Or sign up with</p>
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full border border-gray-300 py-2 rounded-lg text-gray-800 flex items-center justify-center gap-2 hover:bg-gray-100 transition"
+          >
+            <Image
+              src="/google-icon.svg"
+              alt="Google"
+              width={20}
+              height={20}
+              priority
+            />
+            <span>Continue with Google</span>
+          </button>
+        </div>
 
         <p className="text-sm text-gray-600 mt-4 text-center">
-          Don’t have an account?{" "}
-          <a href="/register" className="text-brand hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <a href="/login" className="text-brand hover:underline">
+            Login
           </a>
         </p>
       </div>
