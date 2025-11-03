@@ -4,6 +4,7 @@ import Image, { ImageProps } from "next/image";
 import { FiHeart, FiShoppingCart, FiCheck } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useShop } from "@/context/ShopContext";
+import { useIsClient } from "@/hooks/useIsClient";
 
 interface Product {
   id: number | string;
@@ -23,7 +24,11 @@ export default function ProductCard({
   index = 0,
   imageProps,
 }: ProductCardProps) {
+  const isClient = useIsClient();
   const { addToCart, toggleFavorite, isInCart, isFavorite } = useShop();
+
+  // ✅ Avoid SSR mismatch
+  if (!isClient) return null;
 
   const inCart = isInCart(product.id);
   const isFav = isFavorite(product.id);
@@ -59,7 +64,7 @@ export default function ProductCard({
         <div className="flex items-center gap-1.5 sm:gap-2 mt-2">
           <button
             onClick={() => addToCart(product)}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-medium transition cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 px-4 sm:px-3 rounded-full text-xs sm:text-sm font-medium transition cursor-pointer ${
               inCart
                 ? "bg-gray-200 text-gray-700 cursor-default"
                 : "bg-brand text-white hover:bg-brand-dark"

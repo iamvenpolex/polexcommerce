@@ -3,11 +3,36 @@
 import ProductCard from "./ProductCard";
 
 const products = [
-  { id: 1, name: "Wireless Headphones", price: "₦12,000", image: "/woman.png" },
-  { id: 2, name: "Smart Watch", price: "₦18,500", image: "/woman.png" },
-  { id: 3, name: "Running Sneakers", price: "₦22,000", image: "/woman.png" },
-  { id: 4, name: "Gaming Controller", price: "₦15,000", image: "/woman.png" },
-  { id: 5, name: "Phone Tripod Stand", price: "₦7,000", image: "/woman.png" },
+  {
+    id: 1,
+    name: "Wireless Headphones",
+    price: "₦12,000",
+    image: "/3d-wireless-headphone-image_1222055-1890.jpg",
+  },
+  {
+    id: 2,
+    name: "Smart Watch",
+    price: "₦18,500",
+    image: "/smart-watch.jpg",
+  },
+  {
+    id: 3,
+    name: "Running Sneakers",
+    price: "₦22,000",
+    image: "/sneakers.webp",
+  },
+  {
+    id: 4,
+    name: "Gaming Controller",
+    price: "₦15,000",
+    image: "/gaming-controller.avif",
+  },
+  {
+    id: 5,
+    name: "Phone Tripod Stand",
+    price: "₦7,000",
+    image: "/phone-tripodstand.jpg",
+  },
 ];
 
 export default function FeaturedProducts() {
@@ -24,7 +49,7 @@ export default function FeaturedProducts() {
             {products.map((product, index) => (
               <div
                 key={product.id}
-                className="min-w-[48%] sm:min-w-[45%] md:min-w-0 flex-shrink-0 md:flex-shrink"
+                className="min-w-[48%] sm:min-w-[45%] md:min-w-0 shrink-0 md:shrink"
               >
                 <ProductCard
                   product={product}

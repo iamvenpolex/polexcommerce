@@ -9,10 +9,20 @@ import {
   FiMenu,
   FiX,
   FiSearch,
+  FiLogOut,
 } from "react-icons/fi";
 import { useShop } from "@/context/ShopContext";
+import CartDrawer from "@/components/CartDrawer";
+import FavouritesDrawer from "@/components/FavouritesDrawer";
+import { useSessionStorage } from "@/hooks/useSessionStorage";
 
-// Small reusable Badge component
+// ✅ Define the user type
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 function Badge({ count }: { count: number }) {
   if (count === 0) return null;
   return (
@@ -24,14 +34,25 @@ function Badge({ count }: { count: number }) {
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { cart, favorites } = useShop();
-  const [mounted, setMounted] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isFavouritesOpen, setIsFavouritesOpen] = useState(false);
 
-  // ✅ Hydration-safe mount
+  // ✅ Tell TypeScript that user can be User or null
+  const [user, setUser] = useSessionStorage<User | null>("user", null);
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { cart, favorites } = useShop();
+
   useEffect(() => {
     const id = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(id);
   }, []);
+
+  const handleLogout = () => {
+    setUser(null); // clear session
+    setShowDropdown(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md">
@@ -47,7 +68,7 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Search for products, brands and categories"
-              className="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <FiSearch className="absolute right-3 top-2.5 text-gray-500" />
           </div>
@@ -56,21 +77,65 @@ export default function Navbar() {
         {/* Right Icons */}
         <div className="flex items-center space-x-4 text-gray-700 relative">
           {/* Favorites */}
-          <Link href="/favorites" className="relative hover:text-brand">
+          <button
+            onClick={() => setIsFavouritesOpen(true)}
+            className="relative hover:text-brand"
+          >
             <FiHeart size={20} />
             {mounted && <Badge count={favorites.length} />}
-          </Link>
+          </button>
 
           {/* Cart */}
-          <Link href="/cart" className="relative hover:text-brand">
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="relative hover:text-brand"
+          >
             <FiShoppingCart size={20} />
             {mounted && <Badge count={cart.length} />}
-          </Link>
-
-          {/* User */}
-          <button className="hover:text-brand">
-            <FiUser size={20} />
           </button>
+
+          {/* User Icon */}
+          <div className="relative">
+            {user ? (
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="hover:text-brand flex items-center space-x-1"
+              >
+                <FiUser size={20} />
+                <span className="text-sm font-medium">{user.name}</span>
+              </button>
+            ) : (
+              <Link href="/login" className="hover:text-brand">
+                <FiUser size={20} />
+              </Link>
+            )}
+
+            {/* Dropdown for logged-in user */}
+            {showDropdown && user && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-md text-sm">
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 hover:bg-gray-50 text-gray-700"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  Profile
+                </Link>
+                <Link
+                  href="/orders"
+                  className="block px-4 py-2 hover:bg-gray-50 text-gray-700"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  My Orders
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                >
+                  <FiLogOut className="mr-2" /> Logout
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Mobile Menu Toggle */}
           <button
@@ -105,6 +170,13 @@ export default function Navbar() {
           </Link>
         </nav>
       )}
+
+      {/* Drawers */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <FavouritesDrawer
+        isOpen={isFavouritesOpen}
+        onClose={() => setIsFavouritesOpen(false)}
+      />
     </header>
   );
 }

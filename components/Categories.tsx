@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProductCard from "./ProductCard";
+import { FiSearch } from "react-icons/fi";
 
 interface Product {
   id: number | string;
@@ -17,43 +18,50 @@ const products: Product[] = [
     id: 1,
     name: "Wireless Headphones",
     price: "₦12,000",
-    image: "/woman.png",
+    image: "/3d-wireless-headphone-image_1222055-1890.jpg",
     category: "Electronics",
   },
   {
     id: 2,
     name: "Smart Watch",
     price: "₦18,500",
-    image: "/woman.png",
+    image: "/smart-watch.jpg",
     category: "Wearables",
   },
   {
     id: 3,
     name: "Running Sneakers",
     price: "₦22,000",
-    image: "/woman.png",
+    image: "/sneakers.webp",
     category: "Shoes",
   },
   {
     id: 4,
     name: "Gaming Controller",
     price: "₦15,000",
-    image: "/woman.png",
+    image: "/gaming-controller.avif",
     category: "Electronics",
   },
   {
     id: 5,
     name: "Phone Tripod Stand",
     price: "₦7,000",
-    image: "/woman.png",
+    image: "/phone-tripodstand.jpg",
     category: "Accessories",
   },
   {
     id: 6,
     name: "Bluetooth Speaker",
     price: "₦11,500",
-    image: "/woman.png",
+    image: "/bluetook-speaker.webp",
     category: "Electronics",
+  },
+  {
+    id: 7,
+    name: "IPhone 17Pro Max",
+    price: "₦2,190,000",
+    image: "/iphone17promax.webp",
+    category: "Phones",
   },
 ];
 
@@ -79,8 +87,20 @@ export default function Categories() {
           Categories
         </h2>
 
+        {/* Search Bar */}
+        <div className=" md:flex flex-1 justify-center mx-6">
+          <div className="relative w-full max-w-md">
+            <input
+              type="text"
+              placeholder="products, brands and categories"
+              className="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <FiSearch className="absolute right-3 top-2.5 text-gray-500 hover:text-brand hover:cursor-pointer " />
+          </div>
+        </div>
+
         {/* Category Filter Buttons */}
-        <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
+        <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8 py-3">
           {categories.map((category) => (
             <button
               key={category}
@@ -88,7 +108,7 @@ export default function Categories() {
               className={`px-4 py-2 rounded-full font-medium transition ${
                 selectedCategory === category
                   ? "bg-brand text-white"
-                  : "bg-white text-gray-800 hover:bg-gray-200"
+                  : "bg-white text-gray-800 hover:bg-gray-200 hover:cursor-pointer"
               }`}
             >
               {category}
